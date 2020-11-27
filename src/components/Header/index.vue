@@ -129,6 +129,7 @@ export default {
         border: none;
         color: #fff;
         float: left;
+
         cursor: pointer;
       }
     }
