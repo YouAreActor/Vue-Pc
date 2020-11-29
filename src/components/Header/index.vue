@@ -8,7 +8,7 @@
               <p class="left">尚品汇欢迎您！</p>
               <p class="right">
                 <span>请</span>
-                <router-link to="/login"><a>登录</a></router-link>
+                <router-link to="/login">登录</router-link>
                 <router-link to="/register">
                   <a class="register">免费注册</a>
                 </router-link>
@@ -33,8 +33,10 @@
             /></router-link>
           </h1>
           <div class="search">
-            <input class="ipt" type="text" />
-            <button class="btn" @click="search">搜索</button>
+            <form class="searchForm" @submit.prevent="search">
+              <input class="ipt" type="text" v-model="searchValue" />
+              <button class="btn">搜索</button>
+            </form>
           </div>
         </div>
       </div>
@@ -44,19 +46,48 @@
 <script>
 export default {
   name: "Header",
+  data() {
+    return {
+      searchValue: "",
+    };
+  },
   methods: {
+    //搜索功能 写法1
+    /*  search() {
+      const { searchValue } = this;
+      const params = searchValue ? `/${searchValue}` : "";
+      const location = "/search" + params;
+      this.$router.push(location);
+      // const { searchValue } = this;
+      // const params = searchValue ? `/${searchValue}` : "";
+      // const location = "/search" + params;
+      // this.$router.push(location);
+      console.log(location);
+    }, */
     search() {
-      this.$router.push("/search");
+      //写法2
+      const { searchValue } = this;
+      // const params = searchValue ? `/${searchValue}` : "";
+      // const location = "/search" + params;
+      this.$router.push({
+        name: "search", //使用命名路由
+        params: {
+          searchValue,
+        },
+        query: {
+          name: "jack",
+        },
+      });
     },
   },
 };
 </script>
 <style lang="less" scoped>
 .header-nav {
-  width: 1519.2px;
+  width: 100%;
   height: 136px;
   .header-nav-herder {
-    width: 1519.2px;
+    width: 100%;
     height: 30px;
     background-color: #ccc;
     .header-nav-frist {
@@ -67,7 +98,7 @@ export default {
       justify-content: space-around;
       .header-nav-first-left {
         text-align: center;
-        width: 600px;
+        width: 50%;
         line-height: 30px;
         display: flex;
         span {
@@ -78,14 +109,14 @@ export default {
         }
         .register {
           border-left: 1px solid #b3aeae;
-          padding: 0 5px;
+          padding: 0 0 0 10px;
           margin-left: 5px;
         }
       }
       .header-nav-first-right {
         text-align: center;
         line-height: 30px;
-        width: 600px;
+        width: 50%;
         a {
           margin: 0 10px;
           // color: red;
