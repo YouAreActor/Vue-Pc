@@ -68,16 +68,20 @@ export default {
       //写法2
       const { searchValue } = this;
       // const params = searchValue ? `/${searchValue}` : "";
-      // const location = "/search" + params;
-      this.$router.push({
-        name: "search", //使用命名路由
-        params: {
+      const location = {
+        name: "search",
+      };
+      if (searchValue) {
+        location.params = {
           searchValue,
-        },
-        query: {
-          name: "jack",
-        },
-      });
+        };
+      }
+      //添加query参数
+      const { categoryName } = this.$route.query;
+      if (categoryName) {
+        location.query = this.$route.query;
+      }
+      this.$router.push(location);
     },
   },
 };

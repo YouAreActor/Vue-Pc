@@ -10,7 +10,7 @@ import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 
 const instance = aixos.create({
-  baseURL: "/api",//公共的基础路径
+  baseURL: "/mock",//公共的基础路径
   headers: {
     //登录不需要接口
   }
