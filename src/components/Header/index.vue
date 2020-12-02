@@ -81,8 +81,25 @@ export default {
       if (categoryName) {
         location.query = this.$route.query;
       }
-      this.$router.push(location);
+
+      //this.$router.replace(location);
+      //判断路径是否是search组件
+      //if(this.$route.path.includes("/search"))
+      //if(this.$route.path.startWith("/search"))
+      //if(/^\/search/.test(this.$route.path))
+      //if(this.$route.name === "search")
+      if (this.$route.path.indexOf("/search") > -1) {
+        this.$router.replace(location);
+      } else {
+        this.$router.push(location);
+      }
     },
+  },
+  mounted() {
+    this.$bus.$on("clearSearchValue", () => {
+      //清空searchValue
+      this.searchValue = "";
+    });
   },
 };
 </script>

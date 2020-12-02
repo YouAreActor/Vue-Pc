@@ -13,15 +13,32 @@
             </li>
           </ul>
           <ul class="fl sui-tag">
-            <li class="with-x">手机</li>
-            <li class="with-x">iphone<i>×</i></li>
-            <li class="with-x">华为<i>×</i></li>
-            <li class="with-x">OPPO<i>×</i></li>
+            <li class="with-x" v-show="options.keyword" @click="delKeyword">
+              关键字:{{ options.keyword }}<i>×</i>
+            </li>
+            <li
+              class="with-x"
+              v-show="options.categoryName"
+              @click="delCategory"
+            >
+              商品分类:{{ options.categoryName }}<i>×</i>
+            </li>
+            <li class="with-x" v-show="options.trademark" @click="delTrademark">
+              商品品牌:{{ options.trademark.split(":")[1] }}<i>×</i>
+            </li>
+            <li
+              class="with-x"
+              v-for="(prop, index) in options.props"
+              :key="prop"
+              @click="delProp(index)"
+            >
+              {{ prop.split(":")[2] }}:{{ prop.split(":")[1] }}<i>×</i>
+            </li>
           </ul>
         </div>
 
         <!--选择商品的类别-->
-        <SearchSelector />
+        <SearchSelector :addTrademark="addTrademark" @add-prop="addProp" />
 
         <!--商品列表导航-->
         <div class="details clearfix">
@@ -130,16 +147,102 @@
 import { mapGetters, mapActions } from "vuex";
 import SearchSelector from "./SearchSelector/SearchSelector";
 import TypeNav from "@comps/TypeNav";
+// import { reqGetProductList } from "@api/search";
 export default {
   name: "Search",
+  data() {
+    return {
+      options: {
+        category1Id: "", //1级分类id
+        category2Id: "", //2级分类id
+        category3Id: "", //3级分类id
+        categoryName: "", //分类名称
+        keyword: "", //搜索关键字
+        order: "", //排序方式
+        pageNo: 1, //页码
+        pageSize: 5, //每一页数量
+        props: [], //商品属性
+        trademark: "", //品牌
+      },
+    };
+  },
+  watch: {
+    //监视地址的变化
+    $route() {
+      this.updateProductList();
+    },
+  },
   computed: {
     ...mapGetters(["goodsList"]),
   },
   methods: {
     ...mapActions(["getProductList"]),
+    //更新商品列表
+    updateProductList() {
+      const { searchValue: keyword } = this.$route.params;
+      const {
+        category1Id, //1级分类id
+        category2Id, //2级分类id
+        category3Id, //3级分类id
+        categoryName,
+      } = this.$route.query;
+      const options = {
+        ...this.options, //携带上所有初始化的数据
+        keyword,
+        category1Id, //1级分类id
+        category2Id, //2级分类id
+        category3Id, //3级分类id
+        categoryName,
+      };
+      this.options = options;
+      this.getProductList(options);
+    },
+    //删除关键字
+    delKeyword() {
+      this.options.keyword = "";
+      //清空keyword
+      this.$bus.$emit("clearSearchValue");
+      //清除路径的parmas
+      this.$router.replace({
+        name: "search",
+        query: this.$route.query,
+      });
+    },
+    //删除分类
+    delCategory() {
+      (this.options.categoryName = ""),
+        (this.options.category1Id = ""),
+        (this.options.category2Id = ""),
+        (this.options.category3Id = ""),
+        this.$router.replace({
+          name: "search",
+          params: this.$route.params,
+        });
+    },
+    //添加品牌
+    addTrademark(trademark) {
+      this.options.trademark = trademark;
+      this.updateProductList();
+    },
+    //删除品牌
+    delTrademark() {
+      this.options.trademark = "";
+      this.updateProductList();
+    },
+    //添加品牌属性
+    addProp(prop) {
+      this.options.props.push(prop);
+      this.updateProductList();
+    },
+    //删除品牌属性
+    delProp(index) {
+      this.options.props.splice(index, 1);
+      this.updateProductList();
+    },
   },
   mounted() {
-    this.getProductList();
+    // this.getProductList();
+    this.updateProductList();
   },
 
   components: {
