@@ -9,6 +9,8 @@ import "./styles/reset.css"
 
 import "./styles/swiper.min.css"
 
+import "./styles/iconfont.css"
+
 import './plugins/element.js'
 
 //引入mockServer，为了加载里面代码，一旦代码运行，就会启动mock服务器从而拦截响应的请求

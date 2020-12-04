@@ -45,23 +45,54 @@
           <div class="sui-navbar">
             <div class="navbar-inner filter">
               <ul class="sui-nav">
-                <li class="active">
-                  <a href="#">综合</a>
+                <li
+                  :class="{ active: options.order.indexOf('1') > -1 }"
+                  @click="setOrder('1')"
+                >
+                  <a
+                    >综合<i
+                      :class="{
+                        iconfont: true,
+                        'icon-direction-down': isAllDown,
+                        'icon-direction-up': !isAllDown,
+                      }"
+                    ></i>
+                  </a>
                 </li>
                 <li>
-                  <a href="#">销量</a>
+                  <a>销量</a>
                 </li>
                 <li>
-                  <a href="#">新品</a>
+                  <a>新品</a>
                 </li>
                 <li>
-                  <a href="#">评价</a>
+                  <a>评价</a>
                 </li>
-                <li>
-                  <a href="#">价格⬆</a>
-                </li>
-                <li>
-                  <a href="#">价格⬇</a>
+                <li
+                  :class="{ active: options.order.indexOf('2') > -1 }"
+                  @click="setOrder('2')"
+                >
+                  <a
+                    >价格
+                    <span>
+                      <i
+                        :class="{
+                          iconfont: true,
+                          'icon-arrow-up-filling': true,
+                          deactive:
+                            options.order.indexOf('2') > -1 && isPriceDown,
+                        }"
+                      ></i>
+                      <i
+                        :class="{
+                          iconfont: true,
+                          'icon-arrow-down-filling': true,
+                          deactive:
+                            options.order.indexOf('2') > -1 && !isPriceDown,
+                        }"
+                      ></i>
+                    </span>
+                  </a>
                 </li>
               </ul>
             </div>
@@ -108,35 +139,23 @@
               </li>
             </ul>
           </div>
-          <div class="fr page">
-            <div class="sui-pagination clearfix">
-              <ul>
-                <li class="prev disabled">
-                  <a href="#">«上一页</a>
-                </li>
-                <li class="active">
-                  <a href="#">1</a>
-                </li>
-                <li>
-                  <a href="#">2</a>
-                </li>
-                <li>
-                  <a href="#">3</a>
-                </li>
-                <li>
-                  <a href="#">4</a>
-                </li>
-                <li>
-                  <a href="#">5</a>
-                </li>
-                <li class="dotted"><span>...</span></li>
-                <li class="next">
-                  <a href="#">下一页»</a>
-                </li>
-              </ul>
-              <div><span>共10页&nbsp;</span></div>
-            </div>
-          </div>
+          <!-- //分页器 -->
+          <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="options.pageNo"
+            :pager-count="7"
+            :page-sizes="[5, 10, 15, 20]"
+            :page-size="5"
+            layout=" prev, 
+            pager, 
+            next,
+            total, 
+            sizes, 
+            jumper"
+            :total="total"
+          >
+          </el-pagination>
         </div>
       </div>
     </div>
@@ -158,12 +177,14 @@ export default {
         category3Id: "", //3级分类id
         categoryName: "", //分类名称
         keyword: "", //搜索关键字
-        order: "", //排序方式
+        order: "1:desc", //排序方式
         pageNo: 1, //页码
-        pageSize: 5, //每一页数量
+        pageSize: 6, //每一页数量
         props: [], //商品属性
         trademark: "", //品牌
       },
+      isAllDown: true,
+      isPriceDown: false,
     };
   },
   watch: {
@@ -173,12 +194,12 @@ export default {
     },
   },
   computed: {
-    ...mapGetters(["goodsList"]),
+    ...mapGetters(["goodsList", "total"]),
   },
   methods: {
     ...mapActions(["getProductList"]),
     //更新商品列表
-    updateProductList() {
+    updateProductList(pageNo = 1) {
       const { searchValue: keyword } = this.$route.params;
       const {
         category1Id, //1级分类id
@@ -193,6 +214,7 @@ export default {
         category2Id, //2级分类id
         category3Id, //3级分类id
         categoryName,
+        pageNo,
       };
       this.options = options;
       this.getProductList(options);
@@ -210,14 +232,14 @@ export default {
     },
     //删除分类
     delCategory() {
-      (this.options.categoryName = ""),
-        (this.options.category1Id = ""),
-        (this.options.category2Id = ""),
-        (this.options.category3Id = ""),
-        this.$router.replace({
-          name: "search",
-          params: this.$route.params,
-        });
+      this.options.categoryName = "";
+      this.options.category1Id = "";
+      this.options.category2Id = "";
+      this.options.category3Id = "";
+      this.$router.replace({
+        name: "search",
+        params: this.$route.params,
+      });
     },
     //添加品牌
     addTrademark(trademark) {
@@ -239,7 +261,44 @@ export default {
       this.options.props.splice(index, 1);
       this.updateProductList();
     },
+    //设置排序
+    setOrder(order) {
+      let [orderNum, orderType] = this.options.order.split(":");
+      //不相等点击的就是第一次：不改变图标
+      //相等点击就是第二次：改变图标
+      if (orderNum === order) {
+        //看order是1改综合排序
+        //看order是1改价格排序
+        if (order === "1") {
+          this.isAllDown = !this.isAllDown;
+        } else {
+          this.isPriceDown = !this.isPriceDown;
+        }
+
+        orderType = orderType === "desc" ? "asc" : "desc";
+      } else {
+        //点击一次，如果点击的是价格，应该初始化为升序
+        if (order === "1") {
+          orderType = this.isAllDown ? "desc" : "asc";
+        } else {
+          this.isPriceDown = false;
+          orderType = "asc";
+        }
+      }
+      this.options.order = `${order}:${orderType}`;
+      this.updateProductList();
+    },
+    // 当每页条数发生变化触发
+    handleSizeChange(pageSize) {
+      this.options.pageSize = pageSize;
+      this.updateProductList();
+    },
+    //跳转页码
+    handleCurrentChange(pageNo) {
+      this.updateProductList(pageNo);
+    },
   },
+
   mounted() {
     // this.getProductList();
     this.updateProductList();
@@ -354,11 +413,27 @@ export default {
               line-height: 18px;
 
               a {
-                display: block;
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
                 cursor: pointer;
                 padding: 11px 15px;
                 color: #777;
                 text-decoration: none;
+                i {
+                  padding-left: 5px;
+                }
+                span {
+                  display: flex;
+                  flex-direction: column;
+                  line-height: 8px;
+                  i {
+                    font-size: 12px;
+                    &.deactive {
+                      color: rgba(255, 255, 255, 0.5);
+                    }
+                  }
+                }
               }
 
               &.active {
