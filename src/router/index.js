@@ -5,6 +5,7 @@ import Home from "../views/Home"
 import Login from "../views/Login"
 import Search from "../views/Search"
 import Register from "../views/Register"
+import Detail from "../views/Detail"
 
 //解决编程式导航重复点击报错的解决方案
 const push = VueRouter.prototype.push;
@@ -53,5 +54,14 @@ export default new VueRouter({
       path: "/search/:searchValue?",
       component: Search,
     },
-  ]
+    {
+      name: "detail",
+      path: "/detail/:id",
+      component: Detail,
+    },
+  ],
+  // 每次切换路由页面滚动条位置
+  scrollBehavior() {
+    return { x: 0, y: 0 };
+  },
 })

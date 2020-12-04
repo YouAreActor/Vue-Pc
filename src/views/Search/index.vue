@@ -103,9 +103,9 @@
               <li class="yui3-u-1-5" v-for="goods in goodsList" :key="goods.id">
                 <div class="list-wrap">
                   <div class="p-img">
-                    <a href="item.html" target="_blank"
+                    <router-link :to="`/detail/${goods.id}`"
                       ><img :src="goods.defaultImg"
-                    /></a>
+                    /></router-link>
                   </div>
                   <div class="price">
                     <strong>
@@ -114,12 +114,9 @@
                     </strong>
                   </div>
                   <div class="attr">
-                    <a
-                      target="_blank"
-                      href="item.html"
-                      title="促销信息，下单即赠送三个月CIBN视频会员卡！【小米电视新品4A 58 火爆预约中】"
-                      >{{ goods.title }}</a
-                    >
+                    <router-link :to="`/detail/${goods.id}`">{{
+                      goods.title
+                    }}</router-link>
                   </div>
                   <div class="commit">
                     <i class="command">已有<span>2000</span>人评价</i>
@@ -141,6 +138,8 @@
           </div>
           <!-- //分页器 -->
           <el-pagination
+            id="fyq"
+            background
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="options.pageNo"
@@ -179,7 +178,7 @@ export default {
         keyword: "", //搜索关键字
         order: "1:desc", //排序方式
         pageNo: 1, //页码
-        pageSize: 6, //每一页数量
+        pageSize: 5, //每一页数量
         props: [], //商品属性
         trademark: "", //品牌
       },
@@ -253,6 +252,7 @@ export default {
     },
     //添加品牌属性
     addProp(prop) {
+      if (this.options.props.indexOf(prop) > -1) return;
       this.options.props.push(prop);
       this.updateProductList();
     },
@@ -312,6 +312,9 @@ export default {
 </script>
 
 <style lang="less" scoped>
+#fyq {
+  margin-left: 200px;
+}
 .main {
   margin: 10px 0;
 
