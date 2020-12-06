@@ -1,28 +1,30 @@
-import Vue from 'vue'
-import App from './App.vue'
+// @ts-nocheck
+import Vue from "vue";
+import App from "./App";
 
-import router from "./router"
-import store from "./store"
+import router from "./router";
+import store from "./store";
 
-//重置样式引入
-import "./styles/reset.css"
+import "./plugins/element.js";
 
-import "./styles/swiper.min.css"
+// 引入mockServer，为了加载里面代码
+// 里面代码一旦加载，就去启动mock服务器，从而拦截相应的请求
+import "./mock/mockServer";
 
-import "./styles/iconfont.css"
+// 引入公共资源
+import "./styles/reset.css";
+import "./styles/iconfont.css";
+import "swiper/swiper-bundle.min.css";
 
-import './plugins/element.js'
-
-//引入mockServer，为了加载里面代码，一旦代码运行，就会启动mock服务器从而拦截响应的请求
-import "./mock/mockServer"
-
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
 
 new Vue({
   beforeCreate() {
-    Vue.prototype.$bus = this
+    // 初始化全局事件总线对象
+    Vue.prototype.$bus = this;
   },
-  render: h => h(App),
+  render: (h) => h(App),
+  // 应用router
   router,
-  store
-}).$mount('#app')
+  store,
+}).$mount("#app");

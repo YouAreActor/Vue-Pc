@@ -1,10 +1,12 @@
 <template>
-  <div>Register</div>
+  <div>Register...</div>
 </template>
+
 <script>
 export default {
-  neme: "Register",
+  name: "Register",
 };
 </script>
+
 <style lang="less" scoped>
 </style>

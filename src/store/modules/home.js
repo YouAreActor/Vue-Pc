@@ -1,59 +1,46 @@
-//home组件的Vuex状态
-import { reqGetBaseCategoryList, reqGetBanners, reqGetFloors } from "@api/home"
-
+// home组件的vuex状态
+import { reqGetBaseCategoryList, reqGetBanners, reqGetFloors } from "@api/home";
 
 export default {
   state: {
-    categoryList: [],
-    banners: [],//模拟轮播图数据
-    floors: [],//
+    categoryList: [], // 首页三级分类列表数据
+    banners: [], // 首页轮播图数据
+    floors: [], // 首页楼层数据
   },
   getters: {},
   actions: {
+    // 获取首页三级分类列表数据
     async getCategoryList({ commit }) {
-      //调用api home中的方法请求数据并将数据赋值给到categoryList
-      const categoryList = await reqGetBaseCategoryList()
-      commit("GET_CATEGORY_LIST", categoryList)
+      // 发送请求
+      const categoryList = await reqGetBaseCategoryList();
+      // 触发mutation函数
+      commit("GET_CATEGORY_LIST", categoryList);
     },
+
+    // async函数会返回一个promise对象
+    // 这个promise对象：当内部代码全部执行完毕时，会变成成功
     async getBanners({ commit }) {
+      // console.log("actions");
       const banners = await reqGetBanners();
-      commit("GET_BANNERS", banners)
+      // 调用commit 同步调用mutation函数
+      commit("GET_BANNERS", banners);
     },
+
     async getFloors({ commit }) {
       const floors = await reqGetFloors();
-      commit("GET_FLOORS", floors)
-    }
-
-
+      commit("GET_FLOORS", floors);
+    },
   },
   mutations: {
     GET_CATEGORY_LIST(state, categoryList) {
-      state.categoryList = categoryList
+      state.categoryList = categoryList;
     },
     GET_BANNERS(state, banners) {
-      state.banners = banners
+      // console.log("mutation");
+      state.banners = banners;
     },
     GET_FLOORS(state, floors) {
-      state.floors = floors
-    }
-
-  }
-}
-
-/* export default {
-  state: {
-    categoryList: [],
+      state.floors = floors;
+    },
   },
-  getters: {},
-  actions: {
-    async getCategoryList({ commit }) {
-      const categoryList = await reqGetBaseCategoryList();
-      commit("GET_CATEGORY_LIST", categoryList)
-    }
-  },
-  mutations: {
-    GET_CATEGORY_LIST(state, categoryList) {
-      state.categoryList = categoryList
-    }
-  }
-} */
+};

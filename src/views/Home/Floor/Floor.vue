@@ -24,7 +24,7 @@
                   {{ keyword }}
                 </li>
               </ul>
-              <img src="./images/floor-1-1.png" />
+              <img :src="floor.imgUrl" />
             </div>
             <div class="floorBanner">
               <Carousel :carouselList="floor.carouselList" />

@@ -24,11 +24,20 @@
       <div class="fl key">{{ attrs.attrName }}</div>
       <div class="fl value">
         <ul class="type-list">
+          <!-- <li
+            v-for="(attr, index) in attrs.attrValueList"
+            :key="index"
+            @click="
+              $emit('add-prop', `${attrs.attrId}:${attr}:${attrs.attrName}`)
+            "
+          > -->
           <li
             v-for="(attr, index) in attrs.attrValueList"
             :key="index"
             @click="
-              $emit('add-prop', `${attrs.attrId}:${attr}:${attrs.attrName}:`)
+              $listeners['add-prop'](
+                `${attrs.attrId}:${attr}:${attrs.attrName}`
+              )
             "
           >
             <a>{{ attr }}</a>
@@ -42,6 +51,7 @@
 
 <script>
 import { mapGetters } from "vuex";
+
 export default {
   name: "SearchSelector",
   props: {

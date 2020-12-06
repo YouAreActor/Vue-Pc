@@ -11,7 +11,7 @@
     <Like />
     <!--楼层-->
     <Floor v-for="floor in floors" :key="floor.id" :floor="floor" />
-    <!--楼层-->
+    <!--商标-->
     <Brand />
   </div>
 </template>

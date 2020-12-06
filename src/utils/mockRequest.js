@@ -1,39 +1,47 @@
-//封装axios拦截器
-/* 1. 设置公共的请求地址前缀
-2. 请求拦截器：添加公共参数
-3. 响应拦截器: 
-  成功：返回成功的Promise，值为成功的数据
-  失败：返回失败的Promise，值为失败的原因 */
-import aixos from "axios"
+/* 
+  封装axios拦截器
+    1. 设置公共的请求地址前缀
+    2. 请求拦截器：添加公共参数
+    3. 响应拦截器: 
+      成功：返回成功的Promise，值为成功的数据
+      失败：返回失败的Promise，值为失败的原因
+*/
+import axios from "axios";
 import { Message } from "element-ui";
+// 引入进度条插件
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 
-const instance = aixos.create({
-  baseURL: "/mock",//公共的基础路径
+const instance = axios.create({
+  //  / 就是当前服务器地址
+  baseURL: "/mock", // 公共的基础路径
   headers: {
-    //登录不需要接口
-  }
+    // token: 'xxx' // 不行，登录接口不需要
+  },
 });
-//设置请求拦截器
+
+// 设置请求拦截器
 instance.interceptors.request.use(
   (config) => {
-    NProgress.start();
-    //config是请求的配置对象
-    //将来发送请求（请求地址，请求参数，请求方式）都会在config中找
-    //修改config 用来添加公共的请求参数
-    // if(token){
-    //   config.headers.token = token
-    // }
-    return config
-  }
-  //初始化Promise.resolve()返回默认成功的promise，只会触发成功的回调
-  // ()=>{}
-);
+    // config 请求的配置对象
+    // 将来发送请求（请求地址，请求参数，请求方式等）都会在config中找
 
-//设置响应拦截器
+    // 开始进度条
+    NProgress.start();
+
+    // 修改config，用来添加公共的请求参数
+    // if (token) {
+    //   config.headers.token = token;
+    // }
+
+    return config;
+  }
+  // 初始化Promise.resolve()返回默认成功的Promise，只会触发成功的回调
+  // () => {},
+);
+// 设置响应拦截器
 instance.interceptors.response.use(
-  //响应成功，当响状态码为2xx
+  // 响应成功：当响应状态码为 2xx
   (response) => {
     /* 
       响应成功不能代表功能成功，只是代表有响应结果
@@ -63,27 +71,31 @@ instance.interceptors.response.use(
           } 
         }
     */
-
+    // 进度条结束
+    NProgress.done();
     // console.log("response", response);
     // 判断响应的code是否是200
-    NProgress.done();
     if (response.data.code === 200) {
-      //返回成功的响应数据
+      // 返回成功的响应数据
       return response.data.data;
     }
-    const { message } = response.data
-    Message.error(message)
 
-    return Promise.reject(message)
-
+    const { message } = response.data;
+    // 提示错误
+    Message.error(message);
+    // 功能失败 --> 返回失败的Promise
+    return Promise.reject(message);
   },
-  //响应失败 响应状态码不是2xx
-
+  // 响应失败：当响应状态码不是 2xx
   (error) => {
+    // console.dir(error);
+    // 进度条结束
     NProgress.done();
-    const message = error.message || "网络错误"
-    Message.error(message)
-    return Promise.reject(message)
+    const message = error.message || "网络错误";
+    // 提示错误
+    Message.error(message);
+    return Promise.reject(message);
   }
 );
-export default instance
+
+export default instance;

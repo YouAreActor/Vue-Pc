@@ -5,7 +5,7 @@
 
     <div class="main">
       <div class="py-container">
-        <!--已选商品类别-->
+        <!-- 已选商品的类别 -->
         <div class="bread">
           <ul class="fl sui-breadcrumb">
             <li>
@@ -14,50 +14,48 @@
           </ul>
           <ul class="fl sui-tag">
             <li class="with-x" v-show="options.keyword" @click="delKeyword">
-              关键字:{{ options.keyword }}<i>×</i>
+              关键词: {{ options.keyword }}<i>×</i>
             </li>
             <li
               class="with-x"
               v-show="options.categoryName"
               @click="delCategory"
             >
-              商品分类:{{ options.categoryName }}<i>×</i>
+              分类名称: {{ options.categoryName }}<i>×</i>
             </li>
             <li class="with-x" v-show="options.trademark" @click="delTrademark">
-              商品品牌:{{ options.trademark.split(":")[1] }}<i>×</i>
+              品牌: {{ options.trademark.split(":")[1] }}<i>×</i>
             </li>
+
             <li
               class="with-x"
               v-for="(prop, index) in options.props"
               :key="prop"
               @click="delProp(index)"
             >
-              {{ prop.split(":")[2] }}:{{ prop.split(":")[1] }}<i>×</i>
+              {{ prop.split(":")[2] }}: {{ prop.split(":")[1] }}<i>×</i>
             </li>
           </ul>
         </div>
 
-        <!--选择商品的类别-->
+        <!-- 选择商品的类别 -->
         <SearchSelector :addTrademark="addTrademark" @add-prop="addProp" />
 
-        <!--商品列表导航-->
+        <!-- 商品列表导航 -->
         <div class="details clearfix">
           <div class="sui-navbar">
             <div class="navbar-inner filter">
               <ul class="sui-nav">
-                <li
-                  :class="{ active: options.order.indexOf('1') > -1 }"
-                  @click="setOrder('1')"
-                >
+                <li :class="{ active: isOrder('1') }" @click="setOrder('1')">
                   <a
                     >综合<i
                       :class="{
                         iconfont: true,
-                        'icon-direction-down': isAllDown,
-                        'icon-direction-up': !isAllDown,
+                        'icon-direction-down': isAllDown, // 降序图标
+                        'icon-direction-up': !isAllDown, // 升序图标
                       }"
-                    ></i>
-                  </a>
+                    ></i
+                  ></a>
                 </li>
                 <li>
                   <a>销量</a>
@@ -68,27 +66,22 @@
                 <li>
                   <a>评价</a>
                 </li>
-                <li
-                  :class="{ active: options.order.indexOf('2') > -1 }"
-                  @click="setOrder('2')"
-                >
-                  <a
-                    >价格
+                <li :class="{ active: isOrder('2') }" @click="setOrder('2')">
+                  <a>
+                    价格
                     <span>
                       <i
                         :class="{
                           iconfont: true,
                           'icon-arrow-up-filling': true,
-                          deactive:
-                            options.order.indexOf('2') > -1 && isPriceDown,
+                          deactive: isOrder('2') && isPriceDown,
                         }"
                       ></i>
                       <i
                         :class="{
                           iconfont: true,
                           'icon-arrow-down-filling': true,
-                          deactive:
-                            options.order.indexOf('2') > -1 && !isPriceDown,
+                          deactive: isOrder('2') && !isPriceDown,
                         }"
                       ></i>
                     </span>
@@ -136,25 +129,32 @@
               </li>
             </ul>
           </div>
-          <!-- //分页器 -->
-          <el-pagination
-            id="fyq"
-            background
+          <!-- 分页器 -->
+          <Pagination
+            @current-change="handleCurrentChange"
+            :current-page="options.pageNo"
+            :pager-count="7"
+            :page-size="5"
+            :total="total"
+          />
+          <!-- <el-pagination
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="options.pageNo"
             :pager-count="7"
             :page-sizes="[5, 10, 15, 20]"
             :page-size="5"
-            layout=" prev, 
-            pager, 
-            next,
-            total, 
-            sizes, 
-            jumper"
+            background
+            layout="
+              prev,
+              pager, 
+              next, 
+              total, 
+              sizes, 
+              jumper"
             :total="total"
           >
-          </el-pagination>
+          </el-pagination> -->
         </div>
       </div>
     </div>
@@ -165,119 +165,143 @@
 import { mapGetters, mapActions } from "vuex";
 import SearchSelector from "./SearchSelector/SearchSelector";
 import TypeNav from "@comps/TypeNav";
-// import { reqGetProductList } from "@api/search";
+import Pagination from "@comps/Pagination";
+
 export default {
   name: "Search",
   data() {
     return {
       options: {
-        category1Id: "", //1级分类id
-        category2Id: "", //2级分类id
-        category3Id: "", //3级分类id
-        categoryName: "", //分类名称
-        keyword: "", //搜索关键字
-        order: "1:desc", //排序方式
-        pageNo: 1, //页码
-        pageSize: 5, //每一页数量
-        props: [], //商品属性
-        trademark: "", //品牌
+        category1Id: "", // 一级分类id
+        category2Id: "", // 二级分类id
+        category3Id: "", // 三级分类id
+        categoryName: "", // 分类名称
+        keyword: "", // 搜索内容（搜索关键字）
+        order: "1:desc", // 排序方式：1：综合排序  2：价格排序   asc 升序  desc 降序
+        pageNo: 1, // 分页的页码（第几页）
+        pageSize: 5, // 分页的每页商品数量
+        props: [], // 商品属性
+        trademark: "", // 品牌
       },
-      isAllDown: true,
-      isPriceDown: false,
+
+      isAllDown: true, // 综合排序图标
+      isPriceDown: false, // 价格排序
     };
   },
   watch: {
-    //监视地址的变化
+    // 监视$route的变化：监视地址的变化
     $route() {
       this.updateProductList();
     },
+
+    // $route: {
+    //   handler() {
+    //     this.updateProductList();
+    //   },
+    //   immediate: true // 一上来触发一次
+    // }
   },
   computed: {
+    // ...mapState({
+    //   // productList: (state) => state.search.productList,
+    //   trademarkList: (state) => state.search.productList.trademarkList,
+    //   attrsList: (state) => state.search.productList.attrsList,
+    //   goodsList: (state) => state.search.productList.goodsList,
+    // }),
     ...mapGetters(["goodsList", "total"]),
   },
   methods: {
     ...mapActions(["getProductList"]),
-    //更新商品列表
+    // 更新商品列表
     updateProductList(pageNo = 1) {
-      const { searchValue: keyword } = this.$route.params;
+      const { searchText: keyword } = this.$route.params;
       const {
-        category1Id, //1级分类id
-        category2Id, //2级分类id
-        category3Id, //3级分类id
         categoryName,
+        category1Id,
+        category2Id,
+        category3Id,
       } = this.$route.query;
+
       const options = {
-        ...this.options, //携带上所有初始化的数据
-        keyword,
-        category1Id, //1级分类id
-        category2Id, //2级分类id
-        category3Id, //3级分类id
+        ...this.options, // 携带上所有初始化数据
+        keyword, // 以下会覆盖上面的属性
         categoryName,
+        category1Id,
+        category2Id,
+        category3Id,
         pageNo,
       };
+
       this.options = options;
+
       this.getProductList(options);
     },
-    //删除关键字
+    // 删除关键字
     delKeyword() {
+      // 清除options
       this.options.keyword = "";
-      //清空keyword
-      this.$bus.$emit("clearSearchValue");
-      //清除路径的parmas
+      // 清空header组件的keyword
+      this.$bus.$emit("clearKeyword");
+      // 清除路径params参数
+      // $route上面的属性是只读属性，不能修改
+      // this.$route.params = {};
       this.$router.replace({
         name: "search",
         query: this.$route.query,
       });
     },
-    //删除分类
+    // 删除分类
     delCategory() {
       this.options.categoryName = "";
       this.options.category1Id = "";
       this.options.category2Id = "";
       this.options.category3Id = "";
+
       this.$router.replace({
         name: "search",
         params: this.$route.params,
       });
     },
-    //添加品牌
+    // 添加品牌并更新数据
     addTrademark(trademark) {
+      if (this.options.trademark) return;
       this.options.trademark = trademark;
       this.updateProductList();
     },
-    //删除品牌
+    // 删除品牌数据
     delTrademark() {
       this.options.trademark = "";
       this.updateProductList();
     },
-    //添加品牌属性
+    // 添加品牌属性并更新数据
     addProp(prop) {
+      // 判断属性是否存在
       if (this.options.props.indexOf(prop) > -1) return;
       this.options.props.push(prop);
       this.updateProductList();
     },
-    //删除品牌属性
+    // 删除品牌属性
     delProp(index) {
       this.options.props.splice(index, 1);
       this.updateProductList();
     },
-    //设置排序
+    // 设置排序方式  1:desc
     setOrder(order) {
       let [orderNum, orderType] = this.options.order.split(":");
-      //不相等点击的就是第一次：不改变图标
-      //相等点击就是第二次：改变图标
+
+      // 不相等点击的就是第一次：不改变图标
+      // 相等点击的就是第二次：改变图标
       if (orderNum === order) {
-        //看order是1改综合排序
-        //看order是1改价格排序
+        // 看order是1改综合排序
+        // 看order是1改价格排序
         if (order === "1") {
           this.isAllDown = !this.isAllDown;
         } else {
           this.isPriceDown = !this.isPriceDown;
         }
-
         orderType = orderType === "desc" ? "asc" : "desc";
       } else {
-        //点击一次，如果点击的是价格，应该初始化为升序
+        // 点击一次, 如果点击的是价格，应该初始化为升序
         if (order === "1") {
           orderType = this.isAllDown ? "desc" : "asc";
         } else {
@@ -285,36 +309,42 @@ export default {
           orderType = "asc";
         }
       }
+
       this.options.order = `${order}:${orderType}`;
       this.updateProductList();
     },
     // 当每页条数发生变化触发
     handleSizeChange(pageSize) {
+      // console.log("pageSize", pageSize);
       this.options.pageSize = pageSize;
       this.updateProductList();
     },
-    //跳转页码
+    // 当页码发生变化触发
     handleCurrentChange(pageNo) {
+      // console.log("pageNo", pageNo);
+      // this.options.pageNo = pageNo;
       this.updateProductList(pageNo);
     },
+    // 判断order以 xxx 开头
+    isOrder(order) {
+      return this.options.order.indexOf(order) > -1;
+    },
   },
-
   mounted() {
-    // this.getProductList();
+    // 一上来发送请求会携带参数
+    // 解构赋值提取 params 中 searchText 属性
+    // 将 searchText 重命名为 keyword
     this.updateProductList();
   },
-
   components: {
     SearchSelector,
     TypeNav,
+    Pagination,
   },
 };
 </script>
 
 <style lang="less" scoped>
-#fyq {
-  margin-left: 200px;
-}
 .main {
   margin: 10px 0;
 
@@ -423,6 +453,7 @@ export default {
                 padding: 11px 15px;
                 color: #777;
                 text-decoration: none;
+
                 i {
                   padding-left: 5px;
                 }
