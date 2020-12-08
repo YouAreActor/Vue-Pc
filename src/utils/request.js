@@ -1,14 +1,15 @@
 /* 
-  封装axios拦截器
-    1. 设置公共的请求地址前缀
-    2. 请求拦截器：添加公共参数
-    3. 响应拦截器: 
-      成功：返回成功的Promise，值为成功的数据
-      失败：返回失败的Promise，值为失败的原因
+	封装axios拦截器
+		1. 设置公共的请求地址前缀
+		2. 请求拦截器：添加公共参数
+		3. 响应拦截器: 
+			成功：返回成功的Promise，值为成功的数据
+			失败：返回失败的Promise，值为失败的原因
 */
 import axios from "axios";
 import { Message } from "element-ui";
 import getUserTempId from "@utils/getUserTempId";
+import store from "../store"
 // 引入进度条插件
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
@@ -55,9 +56,10 @@ instance.interceptors.request.use(
 		NProgress.start();
 
 		// 修改config，用来添加公共的请求参数
-		// if (token) {
-		//   config.headers.token = token;
-		// }
+		const token = store.state.user.token
+		if (token) {
+			config.headers.token = token;
+		}
 
 		config.headers.userTempId = userTempId;
 
@@ -71,33 +73,33 @@ instance.interceptors.response.use(
 	// 响应成功：当响应状态码为 2xx
 	(response) => {
 		/* 
-      响应成功不能代表功能成功，只是代表有响应结果
-        功能成功是否成功看 code
-          成功：200
-          失败：201 202
-      
-      返回一个具体为
-        成功：成功的数据
-        失败：失败的原因
-      的结果   
+			响应成功不能代表功能成功，只是代表有响应结果
+				功能成功是否成功看 code
+					成功：200
+					失败：201 202
+		  
+			返回一个具体为
+				成功：成功的数据
+				失败：失败的原因
+			的结果   
 
-      response的数据结构：
-        {
-          headers: {},
-          status: {},
-          request: {},
-          data: { // 响应的数据
-            code: 200,
-            message: "成功",
-            data:{
-              nickName:"Administrator",
-              name:"Admin",
-              token: 90aa16f24d04c7d882051412f9ec45b"
-            },
-            ok: true 
-          } 
-        }
-    */
+			response的数据结构：
+				{
+					headers: {},
+					status: {},
+					request: {},
+					data: { // 响应的数据
+						code: 200,
+						message: "成功",
+						data:{
+							nickName:"Administrator",
+							name:"Admin",
+							token: 90aa16f24d04c7d882051412f9ec45b"
+						},
+						ok: true 
+					} 
+				}
+		*/
 		// 进度条结束
 		NProgress.done();
 		// console.log("response", response);

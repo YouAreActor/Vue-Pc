@@ -32,7 +32,7 @@
     >
       下一页
     </button>
-    <button>总数：{{ total }}</button>
+    <button>总数：{{ total }}条</button>
   </div>
 </template>
 
